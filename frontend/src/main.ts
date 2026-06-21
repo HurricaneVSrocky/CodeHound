@@ -390,11 +390,41 @@ function setupWebSocket() {
   };
 }
 
+async function persistGraph() {
+  const persistBtn = document.getElementById('persistBtn');
+  if (persistBtn) {
+    persistBtn.setAttribute('disabled', 'true');
+    const span = persistBtn.querySelector('span');
+    if (span) span.innerText = 'Saving...';
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/graph/persist`, {
+      method: 'POST'
+    });
+    if (res.ok) {
+      showToast('Graph persisted successfully!');
+    } else {
+      showToast('Failed to persist graph.');
+    }
+  } catch (err) {
+    console.error('Failed to persist graph:', err);
+    showToast('Network error during save.');
+  } finally {
+    if (persistBtn) {
+      persistBtn.removeAttribute('disabled');
+      const span = persistBtn.querySelector('span');
+      if (span) span.innerText = 'Save';
+    }
+  }
+}
+
 async function bootstrap() {
   await initGraph();
   setupWebSocket();
 
   document.getElementById('searchBtn')?.addEventListener('click', searchAndRender);
+  document.getElementById('persistBtn')?.addEventListener('click', persistGraph);
   document.getElementById('searchInput')?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       searchAndRender();

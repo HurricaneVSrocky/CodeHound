@@ -370,3 +370,33 @@ body, html {
   transform: translate(-50%, 0);
   opacity: 1;
 }
+
+.persist-btn {
+  padding: 10px 20px;
+  background-color: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+  font-weight: 600;
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(4px);
+  outline: none;
+}
+
+.persist-btn:hover:not(:disabled) {
+  background-color: rgba(59, 130, 246, 0.35);
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+  transform: translateY(-1px);
+  color: #ffffff;
+  border-color: rgba(59, 130, 246, 0.8);
+}
+
+.persist-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.persist-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

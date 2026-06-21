@@ -31,6 +31,9 @@ def main():
     locate_parser.add_argument("file_path", type=str, help="File path or substring match")
     locate_parser.add_argument("line_number", type=int, help="Line number in the file")
 
+    # 'persist' 子命令
+    persist_parser = subparsers.add_parser("persist", help="Save the current code graph to disk")
+
     args = parser.parse_args()
 
     if args.command == "search":
@@ -39,6 +42,8 @@ def main():
         print(agent_tools.get_node_relations(args.node_id, args.depth, args.direction))
     elif args.command == "locate":
         print(agent_tools.find_node_by_location(args.file_path, args.line_number))
+    elif args.command == "persist":
+        print(agent_tools.persist_graph())
 
 if __name__ == "__main__":
     main()

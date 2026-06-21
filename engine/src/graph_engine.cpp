@@ -321,4 +321,52 @@ std::vector<CxxNode> GraphEngine::find_nodes_by_location(const std::string& file
     return result;
 }
 
+bool GraphEngine::save_to_file(const std::string& filepath) {
+    std::unique_lock<std::shared_mutex> lock(rw_mutex_);
+    
+    flatbuffers::FlatBufferBuilder builder(1024);
+
+    // 1. 构建 Nodes
+    std::vector<flatbuffers::Offset<CodeGraph::Node>> fb_nodes;
+    for (const auto& kv : nodes_) {
+        const auto& node = kv.second;
+        auto n_offset = CodeGraph::CreateNodeDirect(
+            builder,
+            node.id,
+            static_cast<CodeGraph::NodeType>(node.type),
+            node.name.c_str(),
+            node.file_path.c_str(),
+            node.start_line
+        );
+        fb_nodes.push_back(n_offset);
+    }
+
+    // 2. 构建 Edges
+    std::vector<CodeGraph::Edge> fb_edges;
+    for (const auto& kv : out_edges_) {
+        for (const auto& edge : kv.second) {
+            fb_edges.emplace_back(edge.source_id, edge.target_id, static_cast<CodeGraph::EdgeType>(edge.type));
+        }
+    }
+
+    // 3. 构建 GraphPayload
+    auto payload_offset = CodeGraph::CreateGraphPayloadDirect(
+        builder,
+        1, // version
+        &fb_nodes,
+        &fb_edges
+    );
+
+    builder.Finish(payload_offset);
+
+    // 4. 保存到文件
+    std::ofstream outfile(filepath, std::ios::binary);
+    if (!outfile.is_open()) {
+        std::cerr << "Failed to open " << filepath << " for writing." << std::endl;
+        return false;
+    }
+    outfile.write(reinterpret_cast<const char*>(builder.GetBufferPointer()), builder.GetSize());
+    return true;
+}
+
 } // namespace CodeGraph

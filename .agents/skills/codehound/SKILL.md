@@ -45,6 +45,14 @@ The following tools are available as Python functions in `backend/agent_tools.py
 - **Example Usage (CLI)**:
   `python .agents/skills/codehound/scripts/query_graph.py locate "main.cpp" 52`
 
+### 4. `persist_graph`
+- **Purpose**: Persist the current in-memory graph database (including any dynamic updates) to the binary disk file (`graph_data.bin`). Use this when you want to save your parsing or updating results permanently.
+- **Arguments**: None.
+- **Example Usage (Function Calling)**:
+  `persist_graph()`
+- **Example Usage (CLI)**:
+  `python .agents/skills/codehound/scripts/query_graph.py persist`
+
 ---
 
 ## 🧠 Recommended Workflow for AI Agents

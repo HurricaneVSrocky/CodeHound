@@ -133,6 +133,21 @@ def locate_node_by_location(
         for n in project_nodes
     ]
 
+@app.post("/api/graph/persist")
+def persist_graph_endpoint():
+    """
+    将当前内存中最新图谱状态序列化并写入磁盘文件。
+    """
+    if not engine_available or engine is None:
+        raise HTTPException(status_code=500, detail="GraphEngine is not loaded.")
+        
+    bin_path = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../graph_data.bin'))
+    success = engine.save_to_file(bin_path)
+    if not success:
+        raise HTTPException(status_code=500, detail="Failed to write graph data to disk.")
+        
+    return {"status": "success", "message": f"Graph data successfully persisted to {bin_path}"}
+
 @app.get("/api/graph/relations", response_model=GraphRelationsResponse)
 def get_graph_relations(node_id: int, depth: int = 1, direction: int = 0):
     """

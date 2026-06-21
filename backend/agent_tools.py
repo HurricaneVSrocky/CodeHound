@@ -101,3 +101,21 @@ def find_node_by_location(file_path: str, line_number: int) -> str:
         result.append(f"  - Node ID: {n.id} | Type: {t_name} | Name: {n.name} | Location: {n.file_path}:{n.start_line}")
         
     return "\n".join(result)
+
+def persist_graph() -> str:
+    """
+    持久化内存中最新的代码图谱数据到磁盘文件（graph_data.bin）。
+    适用于当 AST 节点或关联关系发生变化，需要将当前图谱落盘归档时。
+    
+    Returns:
+        持久化操作的结果消息。
+    """
+    if not engine:
+        return "Error: GraphEngine is not loaded."
+        
+    bin_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../graph_data.bin'))
+    success = engine.save_to_file(bin_path)
+    if success:
+        return f"成功将最新的内存代码图谱持久化到磁盘：{bin_path}"
+    else:
+        return "持久化失败，写入文件出错。"
