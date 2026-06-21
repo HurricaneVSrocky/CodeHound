@@ -10,22 +10,31 @@ endif()
 
 # 1. Fetch Pybind11
 include(FetchContent)
-FetchContent_Declare(
-    pybind11
-    GIT_REPOSITORY https://github.com/pybind/pybind11.git
-    GIT_TAG        v2.11.1
-)
-FetchContent_MakeAvailable(pybind11)
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/third_party/pybind11-2.11.1")
+    message(STATUS "Using local pybind11 from third_party")
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/third_party/pybind11-2.11.1)
+else()
+    FetchContent_Declare(
+        pybind11
+        GIT_REPOSITORY https://github.com/pybind/pybind11.git
+        GIT_TAG        v2.11.1
+    )
+    FetchContent_MakeAvailable(pybind11)
+endif()
 
 # 2. Fetch FlatBuffers
-FetchContent_Declare(
-    flatbuffers
-    GIT_REPOSITORY https://github.com/google/flatbuffers.git
-    GIT_TAG        v23.5.26
-)
-# 只需要库和编译器
 set(FLATBUFFERS_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(flatbuffers)
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/third_party/flatbuffers-23.5.26")
+    message(STATUS "Using local flatbuffers from third_party")
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/third_party/flatbuffers-23.5.26)
+else()
+    FetchContent_Declare(
+        flatbuffers
+        GIT_REPOSITORY https://github.com/google/flatbuffers.git
+        GIT_TAG        v23.5.26
+    )
+    FetchContent_MakeAvailable(flatbuffers)
+endif()
 
 # 3. Generate FlatBuffers C++ headers
 set(SCHEMA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/schema)
