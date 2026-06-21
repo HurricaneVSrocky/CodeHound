@@ -245,11 +245,16 @@ async function mergeDataToGraph(nodes: any[], edges: any[], sourceX: number = 40
   const existingNodeIds = new Set((currentData.nodes || []).map((n: any) => n.id));
   const existingEdgeIds = new Set((currentData.edges || []).map((e: any) => `${e.source}-${e.target}-${e.style?.labelText}`));
 
+  const childNodeIds = new Set(
+    edges.map((e: any) => String(e.target_id))
+  );
+
   const newNodesToRender = nodes.filter(n => !existingNodeIds.has(String(n.id)));
   const newNodes = newNodesToRender.map((n, i) => {
     const angle = (i / newNodesToRender.length) * 2 * Math.PI;
     const radius = 250 + Math.random() * 50;
     const color = nodeTypeColors[n.type] || '#3B82F6';
+    const isRoot = !childNodeIds.has(String(n.id));
     
     return {
       id: String(n.id),
@@ -257,15 +262,15 @@ async function mergeDataToGraph(nodes: any[], edges: any[], sourceX: number = 40
       x: sourceX + radius * Math.cos(angle),
       y: sourceY + radius * Math.sin(angle),
       style: {
-        r: 25,
+        r: isRoot ? 32 : 25,
         labelText: n.name,
         fill: color,
         stroke: '#F8FAFC',
-        lineWidth: 2,
-        size: 50,
+        lineWidth: isRoot ? 4 : 2,
+        size: isRoot ? 64 : 50,
         // High contrast glowing shadows for dark mode
         shadowColor: color,
-        shadowBlur: 15,
+        shadowBlur: isRoot ? 30 : 15,
         shadowOffsetY: 0,
         // Label styling for dark mode
         labelFill: '#F8FAFC',
