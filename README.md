@@ -21,12 +21,12 @@ But we didn't stop at visualization. CodeHound is built from the ground up to be
 - **🧠 Native AI Agent Tools**: Ships with `agent_tools.py` that allows LLMs to autonomously query the graph, finding nodes and traversing relationships without reading raw text files.
 - **🔌 Real-Time WebSocket Updates**: File system watcher detects code changes, triggers incremental AST parsing, and pushes graph updates instantly to the frontend.
 
-## 📸 UI Showcase & Interaction Demo
+## 📸 UI Showcase
 
 Behold the **Slate Dark Mode** interface with Glassmorphism properties panel!
 
-*(Note: The animation below demonstrates node searching, physics-based clustering, and the dynamic Context & Relations panel.)*
-![CodeHound Dynamic Graph Visualization](./docs/demo.webp)
+*(Note: Click to expand the screenshot)*
+![CodeHound Modern Dark UI](./docs/demo.png)
 > *The frontend features physics-based node clustering, neon glowing edges (Calls, Reads, Writes), and an immersive hacker aesthetic.*
 
 ## 🤖 AI Auto-Debugging Demo (The Real Magic)
