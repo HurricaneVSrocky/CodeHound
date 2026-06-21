@@ -123,7 +123,7 @@ async function searchAndRender() {
   if (panelWrapper) panelWrapper.classList.add('hidden');
 
   try {
-    const res = await fetch(`${API_BASE}/search?keyword=${encodeURIComponent(keyword)}&limit=10`);
+    const res = await fetch(`${API_BASE}/search?keyword=${encodeURIComponent(keyword)}&limit=100`);
     const data = await res.json();
     
     if (data && data.length > 0) {
