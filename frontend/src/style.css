@@ -350,7 +350,6 @@ body, html {
   bottom: 32px;
   left: 50%;
   transform: translate(-50%, 100px);
-  background: rgba(239, 68, 68, 0.95);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.15);
   padding: 12px 24px;
@@ -359,11 +358,22 @@ body, html {
   font-weight: 600;
   font-size: 0.95rem;
   font-family: var(--font-ui);
-  box-shadow: 0 10px 30px rgba(239, 68, 68, 0.4), 0 0 15px rgba(239, 68, 68, 0.2);
   z-index: 1000;
   transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s;
   opacity: 0;
   pointer-events: none;
+}
+
+/* 红色 - 失败 */
+.search-toast.error {
+  background: rgba(239, 68, 68, 0.95);
+  box-shadow: 0 10px 30px rgba(239, 68, 68, 0.4), 0 0 15px rgba(239, 68, 68, 0.2);
+}
+
+/* 绿色 - 成功 */
+.search-toast.success {
+  background: rgba(34, 197, 94, 0.95);
+  box-shadow: 0 10px 30px rgba(34, 197, 94, 0.4), 0 0 15px rgba(34, 197, 94, 0.2);
 }
 
 .search-toast.show {

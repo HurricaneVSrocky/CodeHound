@@ -176,7 +176,7 @@ async function fetchAndExpandNode(nodeId: number, sourceX: number = 400, sourceY
   }
 }
 
-function showToast(message: string) {
+function showToast(message: string, type: 'success' | 'error' = 'error') {
   let toast = document.getElementById('searchToast');
   if (!toast) {
     toast = document.createElement('div');
@@ -185,6 +185,8 @@ function showToast(message: string) {
     document.body.appendChild(toast);
   }
   toast.innerText = message;
+  toast.classList.remove('success', 'error');
+  toast.classList.add(type);
   toast.classList.add('show');
   setTimeout(() => {
     toast?.classList.remove('show');
@@ -403,13 +405,13 @@ async function persistGraph() {
       method: 'POST'
     });
     if (res.ok) {
-      showToast('Graph persisted successfully!');
+      showToast('Graph persisted successfully!', 'success');
     } else {
-      showToast('Failed to persist graph.');
+      showToast('Failed to persist graph.', 'error');
     }
   } catch (err) {
     console.error('Failed to persist graph:', err);
-    showToast('Network error during save.');
+    showToast('Network error during save.', 'error');
   } finally {
     if (persistBtn) {
       persistBtn.removeAttribute('disabled');
