@@ -77,24 +77,20 @@ Dependency relations:
 
 ### Installation & Run
 
-1. **Build the C++ Engine**
+CodeHound provides a unified cross-platform build script `manage.py` that handles C++ compilation, Python package installation, and Node.js dependency resolution in one go.
+
+1. **Build the entire project (C++, Backend, Frontend)**
 ```bash
-mkdir build && cd build
-cmake -DCMAKE_BUILD_TYPE=Release ..
-cmake --build . --config Release
+python manage.py build
 ```
 
-2. **Start the Backend & Watcher**
+2. **Start all services & Watcher**
 ```bash
-pip install -r backend/requirements.txt
-python backend/main.py
-```
+# Start rendering the default dummy project
+python manage.py start
 
-3. **Start the Frontend**
-```bash
-cd frontend
-npm install
-npm run dev
+# Or dynamically parse and render your own C/C++ project!
+python manage.py start D:/MyAwesomeProject
 ```
 
 4. **Run the AI Agent Demo**

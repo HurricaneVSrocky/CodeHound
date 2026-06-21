@@ -41,6 +41,7 @@ if engine_available:
     else:
         print(f"Graph data not found at {dummy_data_path}. Please run codegraph-parser first.")
 
+    import watcher
     # 解析配置项目路径
     custom_dir = os.environ.get("CODEHOUND_PROJECT_DIR")
     if custom_dir and os.path.exists(custom_dir):
