@@ -279,4 +279,46 @@ std::pair<std::vector<CxxNode>, std::vector<CxxEdge>> GraphEngine::get_relations
     return {ret_nodes, ret_edges};
 }
 
+std::vector<CxxNode> GraphEngine::find_nodes_by_location(const std::string& file_path_substring, int line_number) {
+    std::shared_lock<std::shared_mutex> lock(rw_mutex_);
+    
+    std::unordered_map<std::string, std::vector<CxxNode>> best_fit_per_file;
+    std::unordered_map<std::string, int> min_diff_per_file;
+
+    for (const auto& kv : nodes_) {
+        const auto& node = kv.second;
+        if (node.file_path.find(file_path_substring) == std::string::npos) {
+            continue;
+        }
+
+        if (line_number <= 0) {
+            best_fit_per_file[node.file_path].push_back(node);
+            continue;
+        }
+
+        if (node.start_line <= line_number) {
+            int diff = line_number - node.start_line;
+            auto it = min_diff_per_file.find(node.file_path);
+            if (it == min_diff_per_file.end()) {
+                min_diff_per_file[node.file_path] = diff;
+                best_fit_per_file[node.file_path] = {node};
+            } else if (diff < it->second) {
+                min_diff_per_file[node.file_path] = diff;
+                best_fit_per_file[node.file_path] = {node};
+            } else if (diff == it->second) {
+                best_fit_per_file[node.file_path].push_back(node);
+            }
+        }
+    }
+
+    std::vector<CxxNode> result;
+    for (const auto& kv : best_fit_per_file) {
+        for (const auto& node : kv.second) {
+            result.push_back(node);
+        }
+    }
+
+    return result;
+}
+
 } // namespace CodeGraph

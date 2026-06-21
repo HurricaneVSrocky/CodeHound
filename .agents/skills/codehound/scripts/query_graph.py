@@ -26,12 +26,19 @@ def main():
     relations_parser.add_argument("--depth", type=int, default=1, help="Hop depth (default: 1)")
     relations_parser.add_argument("--direction", type=int, default=0, help="0=Both, 1=Outgoing (called/read by this), 2=Incoming (calling/reading this)")
 
+    # 'locate' 子命令
+    locate_parser = subparsers.add_parser("locate", help="Locate node by file path and line number")
+    locate_parser.add_argument("file_path", type=str, help="File path or substring match")
+    locate_parser.add_argument("line_number", type=int, help="Line number in the file")
+
     args = parser.parse_args()
 
     if args.command == "search":
         print(agent_tools.find_node_by_name(args.keyword))
     elif args.command == "relations":
         print(agent_tools.get_node_relations(args.node_id, args.depth, args.direction))
+    elif args.command == "locate":
+        print(agent_tools.find_node_by_location(args.file_path, args.line_number))
 
 if __name__ == "__main__":
     main()

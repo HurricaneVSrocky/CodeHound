@@ -54,6 +54,9 @@ public:
     // direction: 0 = Both, 1 = Out (它调用的), 2 = In (调用它的)
     std::pair<std::vector<CxxNode>, std::vector<CxxEdge>> get_relations(int node_id, int depth, int direction = 0);
 
+    // 根据文件名子串和行号定位最接近或精确匹配的节点
+    std::vector<CxxNode> find_nodes_by_location(const std::string& file_path_substring, int line_number);
+
 private:
     std::shared_mutex rw_mutex_;
 

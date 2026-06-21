@@ -112,6 +112,27 @@ def search_nodes(keyword: str = Query("", description="Keyword to search for nod
         for n in project_nodes
     ]
 
+@app.get("/api/nodes/locate", response_model=List[NodeModel])
+def locate_node_by_location(
+    file_path: str = Query(..., description="File path (substring match)"),
+    line_number: int = Query(..., description="Line number in the file")
+):
+    """
+    根据文件名子串和行号定位图谱中的节点。
+    """
+    if not engine_available or engine is None:
+        return [
+            NodeModel(id=3, type=4, name="main (mock)", file_path="src/main.cpp", start_line=50)
+        ]
+        
+    results = engine.find_nodes_by_location(file_path, line_number)
+    project_nodes = [n for n in results if project_dir in os.path.abspath(n.file_path).replace("\\", "/")]
+    
+    return [
+        NodeModel(id=n.id, type=n.type, name=n.name, file_path=n.file_path, start_line=n.start_line)
+        for n in project_nodes
+    ]
+
 @app.get("/api/graph/relations", response_model=GraphRelationsResponse)
 def get_graph_relations(node_id: int, depth: int = 1, direction: int = 0):
     """

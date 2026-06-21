@@ -74,3 +74,30 @@ def get_node_relations(node_id: int, depth: int = 1, direction: int = 0) -> str:
         result.append(f"  - {src} --[{rel}]--> {tgt}")
         
     return "\n".join(result)
+
+def find_node_by_location(file_path: str, line_number: int) -> str:
+    """
+    根据文件名和行号在代码图谱中检索并定位对应的节点。
+    适用于 AI 从崩溃日志、调用栈中提取了 `file:line` 信息但不知道具体函数或变量名时。
+    
+    Args:
+        file_path: 文件路径（支持模糊/相对子串匹配，例如 'main.cpp'）。
+        line_number: 源码中的行号。
+        
+    Returns:
+        包含找到的节点 ID、名称、所在文件和行号的文本列表。
+    """
+    if not engine:
+        return "Error: GraphEngine is not loaded."
+        
+    nodes = engine.find_nodes_by_location(file_path, line_number)
+    if not nodes:
+        return f"未找到在文件 '{file_path}' 的第 {line_number} 行附近匹配的节点。"
+        
+    types = {1: 'File', 2: 'Class', 3: 'Struct', 4: 'Function', 5: 'Method', 6: 'Variable'}
+    result = [f"Found {len(nodes)} nodes matching location '{file_path}:{line_number}':"]
+    for n in nodes:
+        t_name = types.get(n.type, f"Unknown({n.type})")
+        result.append(f"  - Node ID: {n.id} | Type: {t_name} | Name: {n.name} | Location: {n.file_path}:{n.start_line}")
+        
+    return "\n".join(result)
