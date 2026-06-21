@@ -69,11 +69,34 @@ Dependency relations:
 
 ## 🚀 Getting Started
 
-### Prerequisites
-- Python 3.9+
-- Node.js 18+
-- CMake & C++17 Compiler
-- `libclang` installed and in your PATH
+### Prerequisites & Materials Required
+
+To run CodeHound and visualize your code, you must satisfy the following system dependencies and prepare the necessary source materials.
+
+#### 1. System Dependencies
+- **Python 3.9+** (For running the FastAPI backend and AST parser)
+- **Node.js 18+** (For React/Vite frontend visualization)
+- **CMake & C++17 Compiler** (MSVC on Windows, GCC/Clang on Linux/macOS)
+- **LLVM / `libclang`**:
+  - CodeHound relies on LLVM's `libclang` parsing library to dump the C++ Abstract Syntax Tree (AST).
+  - **Windows**: Run the pre-packaged `LLVM-18.1.8-win64.exe` installer in the root folder, or execute `python download_llvm.py` to retrieve it. Ensure LLVM's bin folder containing `libclang.dll` is added to your system `PATH`.
+  - **Linux/macOS**: Install via your package manager (e.g., `sudo apt-get install libclang-dev` on Ubuntu).
+
+#### 2. Inputs & Materials for Analyzing C++ Projects
+To visualize a custom C++ codebase, you need:
+- **C/C++ Source Files**: Your project directory containing `.cpp`, `.h`, `.c`, `.hpp`, etc.
+- **Compilation Database (`compile_commands.json`)**:
+  - **Why it is critical**: Code Hound needs include paths (`-I`) and compiler macros (`-D`) to parse standard libraries and external headers. Without this database, AST parsing will fail to resolve symbols, resulting in missing nodes/edges.
+  - **For CMake projects**: Enable database generation by adding this line to your root `CMakeLists.txt`:
+    ```cmake
+    set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+    ```
+    This generates `compile_commands.json` in your build directory. Make sure to copy or link it to the project root directory.
+    *(See `tests/dummy_project/compile_commands.json` for a minimal reference.)*
+  - **For Makefile projects**: Use [Bear](https://github.com/rizsotto/Bear) to capture the build commands:
+    ```bash
+    bear -- make
+    ```
 
 ### Installation & Run
 
