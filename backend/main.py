@@ -41,9 +41,13 @@ if engine_available:
     else:
         print(f"Graph data not found at {dummy_data_path}. Please run codegraph-parser first.")
 
-    # 启动 Watchdog 监听 Dummy 项目
-    import watcher
-    project_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../tests/dummy_project'))
+    # 解析配置项目路径
+    custom_dir = os.environ.get("CODEHOUND_PROJECT_DIR")
+    if custom_dir and os.path.exists(custom_dir):
+        project_dir = os.path.abspath(custom_dir).replace("\\", "/")
+    else:
+        project_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../tests/dummy_project')).replace("\\", "/")
+        
     parser_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../parser/codegraph_parser.py'))
     
     out_bin = os.path.abspath(os.path.join(os.path.dirname(__file__), '../delta.bin'))
@@ -95,9 +99,10 @@ def search_nodes(keyword: str = Query("", description="Keyword to search for nod
             NodeModel(id=3, type=4, name="main (mock)", file_path="src/main.cpp", start_line=50)
         ]
     
-    # 为了避免被系统库和标准库淹没，这里临时在后端通过限定项目名过滤
-    results = engine.search_nodes(keyword, limit * 10)  # 获取更多避免被系统库截断
-    project_nodes = [n for n in results if "dummy_project" in n.file_path][:limit]
+    # 限定项目过滤（防止部分未受 parser 拦截的系统节点出现）
+    results = engine.search_nodes(keyword, limit * 10)
+    project_nodes = [n for n in results if project_dir in os.path.abspath(n.file_path).replace("\\", "/")]
+    project_nodes = project_nodes[:limit]
     
     return [
         NodeModel(id=n.id, type=n.type, name=n.name, file_path=n.file_path, start_line=n.start_line)
@@ -124,8 +129,8 @@ def get_graph_relations(node_id: int, depth: int = 1, direction: int = 0):
     
     nodes, edges = engine.get_relations(node_id, depth, direction)
     
-    # 过滤掉非项目文件（如系统头文件 C:/Program Files...）
-    project_nodes = [n for n in nodes if "dummy_project" in n.file_path]
+    # 过滤掉非项目文件
+    project_nodes = [n for n in nodes if project_dir in os.path.abspath(n.file_path).replace("\\", "/")]
     project_node_ids = {n.id for n in project_nodes}
     
     # 过滤边，确保两端都是项目内的节点
@@ -148,9 +153,8 @@ def get_top_level_nodes():
             NodeModel(id=4, type=5, name="App::init", file_path="src/main.cpp", start_line=12)
         ]
     
-    # 假设项目路径标识为 tests/dummy_project（根据实际情况也可以从配置中读取）
-    # 由于 Windows 路径可能带有反斜杠，而 C++ 提取出的可能是正斜杠，使用 "dummy_project" 作为通用匹配
-    results = engine.get_project_nodes("dummy_project")
+    # 获取属于当前动态路径的节点
+    results = engine.get_project_nodes(project_dir)
     return [
         NodeModel(id=n.id, type=n.type, name=n.name, file_path=n.file_path, start_line=n.start_line)
         for n in results

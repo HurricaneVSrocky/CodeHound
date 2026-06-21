@@ -49,14 +49,21 @@ def build():
 
     print("\n[SUCCESS] Build completed successfully!")
 
-def start():
+def start(target_path=None):
     print("=== Starting CodeHound Services ===")
     
-    backend_proc = subprocess.Popen([sys.executable, "backend/main.py"], cwd=PROJECT_ROOT)
+    env = os.environ.copy()
+    if target_path:
+        env["CODEHOUND_PROJECT_DIR"] = os.path.abspath(target_path)
+        print(f"Target Project: {env['CODEHOUND_PROJECT_DIR']}")
+    else:
+        print("Target Project: Default (tests/dummy_project)")
+        
+    backend_proc = subprocess.Popen([sys.executable, "backend/main.py"], cwd=PROJECT_ROOT, env=env)
     
     frontend_dir = os.path.join(PROJECT_ROOT, "frontend")
     frontend_cmd = "npm run dev" if sys.platform != "win32" else "npm.cmd run dev"
-    frontend_proc = subprocess.Popen(frontend_cmd, shell=True, cwd=frontend_dir)
+    frontend_proc = subprocess.Popen(frontend_cmd, shell=True, cwd=frontend_dir, env=env)
     
     def signal_handler(sig, frame):
         print("\nStopping services...")
@@ -83,8 +90,9 @@ if __name__ == "__main__":
     if cmd == "build":
         build()
     elif cmd == "start":
-        start()
+        target = sys.argv[2] if len(sys.argv) > 2 else None
+        start(target)
     else:
         print(f"Unknown command: {cmd}")
-        print("Usage: python manage.py [build|start]")
+        print("Usage: python manage.py [build|start] [project_path]")
         sys.exit(1)
