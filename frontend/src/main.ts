@@ -190,12 +190,35 @@ async function searchAndRender() {
     if (data && data.length > 0) {
       const targetNode = data.find((n: any) => n.name === keyword) || data[0];
       await fetchAndExpandNode(targetNode.id);
+      
+      setTimeout(() => {
+        if (graph) {
+          graph.focusItem(String(targetNode.id), true, {
+            easing: 'easeCubic',
+            duration: 500,
+          });
+        }
+      }, 200);
     } else {
       // In a real app we'd use a nice toast, but alert for MVP
       alert('Node not found!');
     }
   } catch (err) {
     console.error('Search failed:', err);
+  }
+}
+
+async function fetchTopLevelNodes() {
+  try {
+    const res = await fetch(`${API_BASE}/graph/top_level`);
+    const nodes = await res.json();
+    if (nodes && nodes.length > 0) {
+      const w = window.innerWidth || 800;
+      const h = window.innerHeight || 600;
+      await mergeDataToGraph(nodes, [], w / 2, h / 2);
+    }
+  } catch (err) {
+    console.error('Failed to fetch top level nodes:', err);
   }
 }
 
@@ -306,9 +329,11 @@ async function bootstrap() {
 
   const searchInput = document.getElementById('searchInput') as HTMLInputElement;
   if (searchInput) {
-    searchInput.value = 'main';
-    await searchAndRender();
+    searchInput.value = ''; // Clear default search
   }
+  
+  // Load top-level overview instead of automatically searching for 'main'
+  await fetchTopLevelNodes();
 }
 
 bootstrap();

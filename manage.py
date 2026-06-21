@@ -47,7 +47,7 @@ def build():
     frontend_dir = os.path.join(PROJECT_ROOT, "frontend")
     run_command("npm install", cwd=frontend_dir)
 
-    print("\n✅ Build completed successfully!")
+    print("\n[SUCCESS] Build completed successfully!")
 
 def start():
     print("=== Starting CodeHound Services ===")

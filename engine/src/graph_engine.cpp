@@ -178,6 +178,18 @@ std::vector<CxxNode> GraphEngine::search_nodes(const std::string& keyword, int l
     return ret_nodes;
 }
 
+std::vector<CxxNode> GraphEngine::get_project_nodes(const std::string& project_path_substring) {
+    std::shared_lock<std::shared_mutex> lock(rw_mutex_);
+    std::vector<CodeGraph::CxxNode> ret_nodes;
+
+    for (const auto& kv : nodes_) {
+        if (kv.second.file_path.find(project_path_substring) != std::string::npos) {
+            ret_nodes.push_back(kv.second);
+        }
+    }
+    return ret_nodes;
+}
+
 std::pair<std::vector<CxxNode>, std::vector<CxxEdge>> GraphEngine::get_relations(int node_id, int depth, int direction) {
     std::shared_lock<std::shared_mutex> lock(rw_mutex_);
     

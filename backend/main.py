@@ -125,6 +125,26 @@ def get_graph_relations(node_id: int, depth: int = 1, direction: int = 0):
         edges=[EdgeModel(source_id=e.source_id, target_id=e.target_id, type=e.type) for e in edges]
     )
 
+@app.get("/api/graph/top_level", response_model=List[NodeModel])
+def get_top_level_nodes():
+    """
+    获取项目顶层节点（默认渲染用）
+    """
+    if not engine_available or engine is None:
+        # Fallback dummy data
+        return [
+            NodeModel(id=3, type=4, name="main", file_path="src/main.cpp", start_line=50),
+            NodeModel(id=4, type=5, name="App::init", file_path="src/main.cpp", start_line=12)
+        ]
+    
+    # 假设项目路径标识为 tests/dummy_project（根据实际情况也可以从配置中读取）
+    # 由于 Windows 路径可能带有反斜杠，而 C++ 提取出的可能是正斜杠，使用 "dummy_project" 作为通用匹配
+    results = engine.get_project_nodes("dummy_project")
+    return [
+        NodeModel(id=n.id, type=n.type, name=n.name, file_path=n.file_path, start_line=n.start_line)
+        for n in results
+    ]
+
 @app.websocket("/api/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()

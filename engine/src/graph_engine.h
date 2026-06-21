@@ -44,6 +44,9 @@ public:
     // 关键字检索节点 (精确匹配或包含匹配均可)
     std::vector<CxxNode> search_nodes(const std::string& keyword, int limit = 50);
 
+    // 获取特定项目路径下的所有节点（顶层节点）
+    std::vector<CxxNode> get_project_nodes(const std::string& project_path_substring);
+
     // 获取节点的上下游邻居
     // direction: 0 = Both, 1 = Out (它调用的), 2 = In (调用它的)
     std::pair<std::vector<CxxNode>, std::vector<CxxEdge>> get_relations(int node_id, int depth, int direction = 0);
