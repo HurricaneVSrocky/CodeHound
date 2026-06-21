@@ -176,37 +176,88 @@ async function fetchAndExpandNode(nodeId: number, sourceX: number = 400, sourceY
   }
 }
 
+function showToast(message: string) {
+  let toast = document.getElementById('searchToast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'searchToast';
+    toast.className = 'search-toast';
+    document.body.appendChild(toast);
+  }
+  toast.innerText = message;
+  toast.classList.add('show');
+  setTimeout(() => {
+    toast?.classList.remove('show');
+  }, 3000);
+}
+
 async function searchAndRender() {
+  if (!graph) return;
   const input = document.getElementById('searchInput') as HTMLInputElement;
-  const keyword = input.value.trim();
+  const keyword = input.value.trim().toLowerCase();
+  if (!keyword) return;
   
   // Hide panel on new search
   const panelWrapper = document.getElementById('propertiesPanel');
   if (panelWrapper) panelWrapper.classList.add('hidden');
 
-  try {
-    const res = await fetch(`${API_BASE}/search?keyword=${encodeURIComponent(keyword)}&limit=100`);
-    const data = await res.json();
+  const currentNodes = graph.getNodeData();
+  
+  // 1. Exact match first
+  let targetNode = currentNodes.find((n: any) => n.style?.labelText?.toLowerCase() === keyword);
+  // 2. Fuzzy match second
+  if (!targetNode) {
+    targetNode = currentNodes.find((n: any) => n.style?.labelText?.toLowerCase().includes(keyword));
+  }
+
+  if (targetNode) {
+    // 3. Clear other selections
+    currentNodes.forEach((n: any) => {
+      graph.setElementState(n.id, []);
+    });
+
+    // 4. Smooth focus on matching node
+    graph.focusElement(targetNode.id, {
+      duration: 500,
+    });
+
+    // 5. Trigger glowing pulse animation
+    const originalStyle = { ...targetNode.style };
+    let ticks = 0;
     
-    if (data && data.length > 0) {
-      const targetNode = data.find((n: any) => n.name === keyword) || data[0];
-      await fetchAndExpandNode(targetNode.id);
+    const interval = setInterval(async () => {
+      ticks++;
+      const isHeavy = ticks % 2 === 0;
       
-      setTimeout(() => {
-        if (graph) {
-          graph.focusItem(String(targetNode.id), true, {
-            easing: 'easeCubic',
-            duration: 500,
-          });
-          graph.setItemState(String(targetNode.id), 'selected', true);
+      graph.updateNodeData([{
+        id: targetNode.id,
+        style: {
+          r: isHeavy ? (originalStyle.r * 1.3) : originalStyle.r,
+          lineWidth: isHeavy ? 6 : originalStyle.lineWidth,
+          stroke: isHeavy ? '#FFFFFF' : originalStyle.stroke,
+          shadowBlur: isHeavy ? 50 : originalStyle.shadowBlur
         }
-      }, 800);
-    } else {
-      // In a real app we'd use a nice toast, but alert for MVP
-      alert('Node not found!');
-    }
-  } catch (err) {
-    console.error('Search failed:', err);
+      }]);
+      await graph.render();
+
+      if (ticks >= 6) {
+        clearInterval(interval);
+        
+        // Restore original style
+        graph.updateNodeData([{
+          id: targetNode.id,
+          style: originalStyle
+        }]);
+        await graph.render();
+        
+        // Set final selected state
+        graph.setElementState(targetNode.id, 'selected');
+        const nodeData = graph.getNodeData(targetNode.id);
+        updatePropertiesPanel(targetNode.id, nodeData);
+      }
+    }, 180);
+  } else {
+    showToast('Node not found!');
   }
 }
 

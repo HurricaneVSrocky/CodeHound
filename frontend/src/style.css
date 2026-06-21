@@ -344,3 +344,29 @@ body, html {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.search-toast {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translate(-50%, 100px);
+  background: rgba(239, 68, 68, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 12px 24px;
+  border-radius: var(--radius-md);
+  color: #FFFFFF;
+  font-weight: 600;
+  font-size: 0.95rem;
+  font-family: var(--font-ui);
+  box-shadow: 0 10px 30px rgba(239, 68, 68, 0.4), 0 0 15px rgba(239, 68, 68, 0.2);
+  z-index: 1000;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.search-toast.show {
+  transform: translate(-50%, 0);
+  opacity: 1;
+}
