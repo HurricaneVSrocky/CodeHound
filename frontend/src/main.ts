@@ -107,7 +107,62 @@ function updatePropertiesPanel(id: string, nodeData: any) {
       <span class="prop-label">Node ID</span>
       <div class="prop-value">${id}</div>
     </div>
+    
+    <div class="relations-header">
+      <span class="prop-label" style="margin-bottom: 0;">Context & Relations</span>
+      <span class="relations-loading" id="relationsLoading">Loading...</span>
+    </div>
+    <div id="relationsList" class="relations-list"></div>
   `;
+
+  // Fetch relations context for the panel
+  fetch(`${API_BASE}/graph/relations?node_id=${id}&depth=1&direction=0`)
+    .then(res => res.json())
+    .then(data => {
+      const loadingEl = document.getElementById('relationsLoading');
+      if (loadingEl) loadingEl.style.display = 'none';
+      
+      const listEl = document.getElementById('relationsList');
+      if (!listEl) return;
+      
+      if (!data.edges || data.edges.length === 0) {
+        listEl.innerHTML = '<div class="empty-state" style="margin-top: 10px;">No contextual relations found.</div>';
+        return;
+      }
+      
+      let html = '';
+      data.edges.forEach((edge: any) => {
+        const isIncoming = edge.target_id === parseInt(id);
+        const relatedNodeId = isIncoming ? edge.source_id : edge.target_id;
+        const relatedNode = data.nodes.find((n: any) => n.id === relatedNodeId);
+        if (!relatedNode) return;
+        
+        const tColor = nodeTypeColors[relatedNode.type] || '#3B82F6';
+        const edgeLabel = edgeTypeLabels[edge.type] || 'Unknown';
+        
+        // Quick navigation to related node
+        const onClickHandler = `document.getElementById('searchInput').value='${relatedNode.name}'; document.getElementById('searchBtn').click();`;
+        
+        html += `
+          <div class="relation-item" onclick="${onClickHandler}">
+            <div class="relation-meta">
+              <span class="relation-edge-badge">${edgeLabel}</span>
+              <span class="relation-dir">${isIncoming ? '← from' : '→ to'}</span>
+              <span class="relation-type-badge" style="background-color: ${tColor};">${nodeTypeLabels[relatedNode.type] || relatedNode.type}</span>
+            </div>
+            <div class="relation-name" title="${relatedNode.name}">
+              ${relatedNode.name}
+            </div>
+          </div>
+        `;
+      });
+      listEl.innerHTML = html;
+    })
+    .catch(err => {
+      const loadingEl = document.getElementById('relationsLoading');
+      if (loadingEl) loadingEl.innerText = 'Failed to load context';
+      console.error('Failed to fetch relations context:', err);
+    });
 }
 
 async function fetchAndExpandNode(nodeId: number, sourceX: number = 400, sourceY: number = 300) {

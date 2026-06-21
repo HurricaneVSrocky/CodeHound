@@ -258,3 +258,88 @@ body, html {
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
+
+/* Relations List Styles */
+.relations-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 24px;
+}
+
+.relations-loading {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-style: italic;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.relations-list {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.relation-item {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.relation-item:hover {
+  border-color: rgba(148, 163, 184, 0.4);
+  background: rgba(51, 65, 85, 0.6);
+  transform: translateX(4px);
+}
+
+.relation-meta {
+  display: flex;
+  align-items: center;
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.relation-edge-badge {
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(15, 23, 42, 0.8);
+  font-family: var(--font-code);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.relation-dir {
+  margin: 0 6px;
+  font-family: var(--font-code);
+  font-size: 0.65rem;
+}
+
+.relation-type-badge {
+  padding: 1px 6px;
+  border-radius: 10px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #000;
+}
+
+.relation-name {
+  font-size: 0.85rem;
+  font-family: var(--font-code);
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
