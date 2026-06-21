@@ -72,7 +72,7 @@ class ASTVisitor:
             "id": node_id,
             "type": node_type,
             "name": cursor.spelling,
-            "file_path": file_path,
+            "file_path": abs_file_path,
             "start_line": start_line
         })
         return node_id

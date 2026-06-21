@@ -190,6 +190,31 @@ std::vector<CxxNode> GraphEngine::get_project_nodes(const std::string& project_p
     return ret_nodes;
 }
 
+std::vector<CxxNode> GraphEngine::get_top_level_project_nodes(const std::string& project_path_substring) {
+    std::shared_lock<std::shared_mutex> lock(rw_mutex_);
+    std::vector<CodeGraph::CxxNode> ret_nodes;
+    
+    // 收集所有被 Contains(4) 指向的 target_id，它们属于子节点，不能被当作顶层节点
+    std::unordered_set<int> child_nodes;
+    for (const auto& kv : out_edges_) {
+        for (const auto& edge : kv.second) {
+            if (edge.type == 4) { // Contains
+                child_nodes.insert(edge.target_id);
+            }
+        }
+    }
+
+    for (const auto& kv : nodes_) {
+        if (kv.second.file_path.find(project_path_substring) != std::string::npos) {
+            // 如果不在 child_nodes 里面，说明它没有父节点
+            if (child_nodes.find(kv.first) == child_nodes.end()) {
+                ret_nodes.push_back(kv.second);
+            }
+        }
+    }
+    return ret_nodes;
+}
+
 std::pair<std::vector<CxxNode>, std::vector<CxxEdge>> GraphEngine::get_relations(int node_id, int depth, int direction) {
     std::shared_lock<std::shared_mutex> lock(rw_mutex_);
     

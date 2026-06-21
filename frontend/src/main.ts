@@ -53,6 +53,7 @@ async function initGraph() {
       collideStrength: 0.8
     }
   });
+  (window as any).graph = graph;
 
   graph.on('node:click', (e: any) => {
     const nodeId = e.target.id;
@@ -197,8 +198,9 @@ async function searchAndRender() {
             easing: 'easeCubic',
             duration: 500,
           });
+          graph.setItemState(String(targetNode.id), 'selected', true);
         }
-      }, 200);
+      }, 800);
     } else {
       // In a real app we'd use a nice toast, but alert for MVP
       alert('Node not found!');
@@ -222,6 +224,20 @@ async function fetchTopLevelNodes() {
   }
 }
 
+async function fetchAllNodesAndRelations() {
+  try {
+    const res = await fetch(`${API_BASE}/graph/all`);
+    const data = await res.json();
+    if (data && data.nodes && data.nodes.length > 0) {
+      const w = window.innerWidth || 800;
+      const h = window.innerHeight || 600;
+      await mergeDataToGraph(data.nodes, data.edges || [], w / 2, h / 2);
+    }
+  } catch (err) {
+    console.error('Failed to fetch all nodes and relations:', err);
+  }
+}
+
 async function mergeDataToGraph(nodes: any[], edges: any[], sourceX: number = 400, sourceY: number = 300) {
   if (!graph) return;
 
@@ -237,9 +253,11 @@ async function mergeDataToGraph(nodes: any[], edges: any[], sourceX: number = 40
     
     return {
       id: String(n.id),
+      type: 'circle',
       x: sourceX + radius * Math.cos(angle),
       y: sourceY + radius * Math.sin(angle),
       style: {
+        r: 25,
         labelText: n.name,
         fill: color,
         stroke: '#F8FAFC',
@@ -332,8 +350,8 @@ async function bootstrap() {
     searchInput.value = ''; // Clear default search
   }
   
-  // Load top-level overview instead of automatically searching for 'main'
-  await fetchTopLevelNodes();
+  // Load all nodes and relations by default
+  await fetchAllNodesAndRelations();
 }
 
 bootstrap();

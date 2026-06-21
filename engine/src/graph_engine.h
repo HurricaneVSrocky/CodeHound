@@ -46,6 +46,9 @@ public:
 
     // 获取特定项目路径下的所有节点（顶层节点）
     std::vector<CxxNode> get_project_nodes(const std::string& project_path_substring);
+    
+    // Get only top-level project nodes (nodes without incoming 'Contains' edges)
+    std::vector<CxxNode> get_top_level_project_nodes(const std::string& project_path_substring);
 
     // 获取节点的上下游邻居
     // direction: 0 = Both, 1 = Out (它调用的), 2 = In (调用它的)

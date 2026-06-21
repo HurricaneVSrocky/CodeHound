@@ -33,11 +33,13 @@ app.add_middleware(
 engine = None
 if engine_available:
     engine = codegraph_engine.GraphEngine()
-    dummy_data_path = os.path.join(os.path.dirname(__file__), '../graph_data.bin')
+    dummy_data_path = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../graph_data.bin'))
     if os.path.exists(dummy_data_path):
         success = engine.load_from_file(dummy_data_path)
         if not success:
             print(f"Failed to load graph data from {dummy_data_path}")
+        else:
+            print(f"Successfully loaded graph data from {dummy_data_path}")
     else:
         print(f"Graph data not found at {dummy_data_path}. Please run codegraph-parser first.")
 
@@ -142,6 +144,13 @@ def get_graph_relations(node_id: int, depth: int = 1, direction: int = 0):
         edges=[EdgeModel(source_id=e.source_id, target_id=e.target_id, type=e.type) for e in project_edges]
     )
 
+def get_match_substring(path: str) -> str:
+    normalized = path.replace("\\", "/").strip("/")
+    parts = normalized.split("/")
+    if len(parts) >= 2:
+        return "/".join(parts[-2:])
+    return parts[-1] if parts else ""
+
 @app.get("/api/graph/top_level", response_model=List[NodeModel])
 def get_top_level_nodes():
     """
@@ -154,12 +163,46 @@ def get_top_level_nodes():
             NodeModel(id=4, type=5, name="App::init", file_path="src/main.cpp", start_line=12)
         ]
     
-    # 获取属于当前动态路径的节点
-    results = engine.get_project_nodes(project_dir)
+    # 获取属于当前动态路径的无父节点（顶层）
+    results = engine.get_top_level_project_nodes(get_match_substring(project_dir))
     return [
         NodeModel(id=n.id, type=n.type, name=n.name, file_path=n.file_path, start_line=n.start_line)
         for n in results
     ]
+
+@app.get("/api/graph/all", response_model=GraphRelationsResponse)
+def get_all_nodes_and_relations():
+    """
+    获取项目的所有节点及它们之间的关系边
+    """
+    if not engine_available or engine is None:
+        # Fallback dummy data
+        return GraphRelationsResponse(
+            nodes=[
+                NodeModel(id=3, type=4, name="main", file_path="src/main.cpp", start_line=50),
+                NodeModel(id=4, type=5, name="App::init", file_path="src/main.cpp", start_line=12)
+            ],
+            edges=[
+                EdgeModel(source_id=3, target_id=4, type=3)
+            ]
+        )
+
+    # 1. 获取所有项目节点
+    project_nodes = engine.get_project_nodes(get_match_substring(project_dir))
+    project_node_ids = {n.id for n in project_nodes}
+
+    # 2. 收集这些节点之间的所有出边
+    edges_set = set()
+    for n in project_nodes:
+        _, edges = engine.get_relations(n.id, 1, 1)
+        for e in edges:
+            if e.source_id in project_node_ids and e.target_id in project_node_ids:
+                edges_set.add((e.source_id, e.target_id, e.type))
+
+    return GraphRelationsResponse(
+        nodes=[NodeModel(id=n.id, type=n.type, name=n.name, file_path=n.file_path, start_line=n.start_line) for n in project_nodes],
+        edges=[EdgeModel(source_id=e[0], target_id=e[1], type=e[2]) for e in edges_set]
+    )
 
 @app.websocket("/api/ws")
 async def websocket_endpoint(websocket: WebSocket):

@@ -31,5 +31,6 @@ PYBIND11_MODULE(codegraph_engine, m) {
         .def("apply_delta", &GraphEngine::apply_delta, py::arg("filepath"))
         .def("search_nodes", &GraphEngine::search_nodes, py::arg("keyword"), py::arg("limit") = 50)
         .def("get_project_nodes", &GraphEngine::get_project_nodes, py::arg("project_path_substring"))
+        .def("get_top_level_project_nodes", &GraphEngine::get_top_level_project_nodes, py::arg("project_path_substring"))
         .def("get_relations", &GraphEngine::get_relations, py::arg("node_id"), py::arg("depth"), py::arg("direction") = 0);
 }
