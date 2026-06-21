@@ -95,10 +95,13 @@ def search_nodes(keyword: str = Query("", description="Keyword to search for nod
             NodeModel(id=3, type=4, name="main (mock)", file_path="src/main.cpp", start_line=50)
         ]
     
-    results = engine.search_nodes(keyword, limit)
+    # 为了避免被系统库和标准库淹没，这里临时在后端通过限定项目名过滤
+    results = engine.search_nodes(keyword, limit * 10)  # 获取更多避免被系统库截断
+    project_nodes = [n for n in results if "dummy_project" in n.file_path][:limit]
+    
     return [
         NodeModel(id=n.id, type=n.type, name=n.name, file_path=n.file_path, start_line=n.start_line)
-        for n in results
+        for n in project_nodes
     ]
 
 @app.get("/api/graph/relations", response_model=GraphRelationsResponse)
@@ -120,9 +123,17 @@ def get_graph_relations(node_id: int, depth: int = 1, direction: int = 0):
         )
     
     nodes, edges = engine.get_relations(node_id, depth, direction)
+    
+    # 过滤掉非项目文件（如系统头文件 C:/Program Files...）
+    project_nodes = [n for n in nodes if "dummy_project" in n.file_path]
+    project_node_ids = {n.id for n in project_nodes}
+    
+    # 过滤边，确保两端都是项目内的节点
+    project_edges = [e for e in edges if e.source_id in project_node_ids and e.target_id in project_node_ids]
+    
     return GraphRelationsResponse(
-        nodes=[NodeModel(id=n.id, type=n.type, name=n.name, file_path=n.file_path, start_line=n.start_line) for n in nodes],
-        edges=[EdgeModel(source_id=e.source_id, target_id=e.target_id, type=e.type) for e in edges]
+        nodes=[NodeModel(id=n.id, type=n.type, name=n.name, file_path=n.file_path, start_line=n.start_line) for n in project_nodes],
+        edges=[EdgeModel(source_id=e.source_id, target_id=e.target_id, type=e.type) for e in project_edges]
     )
 
 @app.get("/api/graph/top_level", response_model=List[NodeModel])

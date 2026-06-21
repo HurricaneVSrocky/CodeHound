@@ -17,11 +17,13 @@ if os.path.exists(dll_path):
     Config.set_library_file(dll_path)
 
 class ASTVisitor:
-    def __init__(self):
+    def __init__(self, project_root=""):
         self.usr_to_id = {}
         self.nodes = []
         self.edges = []
         self.next_id = 1
+        # Convert project root to normalized absolute path
+        self.project_root = os.path.abspath(project_root).replace("\\", "/") if project_root else ""
 
     def get_or_add_node(self, cursor):
         usr = cursor.get_usr()
@@ -60,6 +62,11 @@ class ASTVisitor:
 
         # Replace backslashes for consistency
         file_path = file_path.replace("\\", "/")
+        abs_file_path = os.path.abspath(file_path).replace("\\", "/") if file_path else ""
+
+        # 【核心过滤逻辑】：如果设置了项目根目录，且该节点不属于该根目录（例如系统头文件），则直接忽略
+        if self.project_root and not abs_file_path.startswith(self.project_root):
+            return 0
 
         self.nodes.append({
             "id": node_id,
@@ -157,8 +164,11 @@ if __name__ == "__main__":
         idx = sys.argv.index("--out")
         out_file = sys.argv[idx+1]
 
+    # Convert relative project path to absolute for filtering
+    project_root = os.path.abspath(file_path)
+
     index = Index.create()
-    visitor = ASTVisitor()
+    visitor = ASTVisitor(project_root=project_root)
     
     if os.path.isdir(file_path):
         for root, dirs, files in os.walk(file_path):
