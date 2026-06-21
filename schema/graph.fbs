@@ -1,0 +1,47 @@
+namespace CodeGraph;
+
+// 1. 实体类型定义
+enum NodeType : byte {
+    Unknown = 0,
+    File = 1,
+    Class = 2,
+    Struct = 3,
+    Function = 4,
+    Method = 5,
+    Variable = 6
+}
+
+// 2. 关系类型定义
+enum EdgeType : byte {
+    Unknown = 0,
+    Includes = 1,
+    Inherits = 2,
+    Calls = 3,
+    Reads = 4,
+    Writes = 5
+}
+
+// 3. 节点表 (动态长度，适合存储字符串)
+table Node {
+    id: int32;              // 全局唯一ID
+    type: NodeType;         // 实体类型
+    name: string;           // 节点名称/签名
+    file_path: string;      // 归属文件相对路径
+    start_line: int32;      // 源码起始行号
+}
+
+// 4. 边结构体 (固定长度内存布局，极致优化存储)
+struct Edge {
+    source_id: int32;       // 发起方 Node ID
+    target_id: int32;       // 接收方 Node ID
+    type: EdgeType;         // 边类型
+}
+
+// 5. 传输载荷根结构
+table GraphPayload {
+    version: int32;         // 数据版本号，用于升级兼容
+    nodes: [Node];          // 节点数组
+    edges: [Edge];          // 关系数组
+}
+
+root_type GraphPayload;
