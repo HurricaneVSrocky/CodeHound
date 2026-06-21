@@ -61,8 +61,14 @@ async function initGraph() {
   });
 
   graph.on('node:dblclick', async (e: any) => {
-    const nodeId = e.target.id;
-    await fetchAndExpandNode(parseInt(nodeId));
+    const nodeId = e.target.id || (e.item && e.item.getModel().id);
+    let x = 400, y = 300;
+    if (e.item) {
+      const model = e.item.getModel();
+      if (model.x !== undefined) x = model.x;
+      if (model.y !== undefined) y = model.y;
+    }
+    await fetchAndExpandNode(parseInt(nodeId), x, y);
   });
 }
 
@@ -104,11 +110,11 @@ function updatePropertiesPanel(id: string, nodeData: any) {
   `;
 }
 
-async function fetchAndExpandNode(nodeId: number) {
+async function fetchAndExpandNode(nodeId: number, sourceX: number = 400, sourceY: number = 300) {
   try {
     const res = await fetch(`${API_BASE}/graph/relations?node_id=${nodeId}&depth=1&direction=0`);
     const data = await res.json();
-    await mergeDataToGraph(data.nodes, data.edges);
+    await mergeDataToGraph(data.nodes, data.edges, sourceX, sourceY);
   } catch (err) {
     console.error('Failed to fetch relations:', err);
   }
@@ -138,7 +144,7 @@ async function searchAndRender() {
   }
 }
 
-async function mergeDataToGraph(nodes: any[], edges: any[]) {
+async function mergeDataToGraph(nodes: any[], edges: any[], sourceX: number = 400, sourceY: number = 300) {
   if (!graph) return;
 
   const currentData = graph.getData();
@@ -153,8 +159,8 @@ async function mergeDataToGraph(nodes: any[], edges: any[]) {
     
     return {
       id: String(n.id),
-      x: 400 + radius * Math.cos(angle),
-      y: 300 + radius * Math.sin(angle),
+      x: sourceX + radius * Math.cos(angle),
+      y: sourceY + radius * Math.sin(angle),
       style: {
         labelText: n.name,
         fill: color,
